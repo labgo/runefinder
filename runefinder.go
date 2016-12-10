@@ -8,6 +8,12 @@ import (
 	"fmt"
 )
 
+func check(e error) {
+    if e != nil {
+        panic(e)
+    }
+}
+
 func tokenize(s string) []string {
 	separator := func(c rune) bool {
 		return c == ' ' || c == '-'
@@ -57,12 +63,23 @@ func Parse(ucdLine string) (rune, string, []string) {
 }
 
 func main() {
-	input := bufio.NewScanner(os.Stdin)
+	var query []string
+	if len(os.Args[1:]) > 0 {
+		for _, word := range os.Args[1:] {
+			query = append(query, strings.ToUpper(word))
+		}
+	} else {
+		fmt.Println("Usage:  runefinder <word>...\texample: runefinder cat face")
+		os.Exit(1)
+	}
+	ucd, err := os.Open("UnicodeData.txt")
+  check(err)
+	defer ucd.Close()
+	input := bufio.NewScanner(ucd)
 	for input.Scan() {
 		uchar, name, words := Parse(input.Text())
-		fmt.Println(uchar)
-		if sliceHasAllStrings(words, os.Args[1:]) {
-			fmt.Printf("%c\t%s", uchar, name)
+		if sliceHasAllStrings(words, query) {
+			fmt.Printf("%c\t%s\n", uchar, name)
 		}
 
 	}
