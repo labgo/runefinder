@@ -40,8 +40,8 @@ func TestParse(t *testing.T) {
 	}
 	for _, test := range tests {
 		if gotChar, gotName, gotWords := Parse(test.input); gotChar != test.wantChar ||
-				gotName != test.wantName ||
-				!reflect.DeepEqual(gotWords, test.wantWords) {
+			gotName != test.wantName ||
+			!reflect.DeepEqual(gotWords, test.wantWords) {
 			t.Errorf("Parse(%q) = (%v, %v, %v)", test.input, gotChar, gotName, gotWords)
 		}
 	}
@@ -51,7 +51,7 @@ func TestSliceHasAllStrings(t *testing.T) {
 	var tests = []struct {
 		inHaystack []string
 		inNeedles  []string
-		want  		 bool
+		want       bool
 	}{
 		{[]string{"PLUS", "SIGN"}, []string{"SIGN", "PLUS"}, true},
 		{[]string{"PLUS", "SIGN"}, []string{"SIGN"}, true},

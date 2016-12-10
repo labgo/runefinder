@@ -1,17 +1,17 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
+	"os"
 	"strconv"
 	"strings"
-	"bufio"
-	"os"
-	"fmt"
 )
 
 func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+	if e != nil {
+		panic(e)
+	}
 }
 
 func tokenize(s string) []string {
@@ -73,7 +73,7 @@ func main() {
 		os.Exit(1)
 	}
 	ucd, err := os.Open("UnicodeData.txt")
-  check(err)
+	check(err)
 	defer ucd.Close()
 	input := bufio.NewScanner(ucd)
 	for input.Scan() {
