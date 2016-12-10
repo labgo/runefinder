@@ -21,7 +21,6 @@ func TestTokenize(t *testing.T) {
 	}
 }
 
-// 0026;AMPERSAND;Po;0;ON;;;;;N;;;;;
 func TestParse(t *testing.T) {
 
 	var tests = []struct {
