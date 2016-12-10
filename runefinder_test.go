@@ -1,51 +1,43 @@
 package main
 
 import (
+	"reflect"
 	"testing"
-
-	"gopkg.in/check.v1"
 )
 
-// Hook up gocheck into the "go test" runner.
-func Test(t *testing.T) { check.TestingT(t) }
-
-type MySuite struct{}
-
-var _ = check.Suite(&MySuite{})
-
-func (s *MySuite) TestFindOneWord(c *check.C) {
-	index := map[string][]rune{
-		"REGISTERED": []rune{0xAE},
+func TestTokenize(t *testing.T) {
+	var tests = []struct {
+		input string
+		want  []string
+	}{
+		{"AMPERSAND", []string{"AMPERSAND"}},
+		{"PLUS SIGN", []string{"PLUS", "SIGN"}},
+		{"HYPHEN-MINUS", []string{"HYPHEN", "MINUS"}},
 	}
-
-	tests := map[string][]rune{
-		"registered": []rune{0xAE},
-		"nonesuch":   []rune{},
-	}
-	for query, found := range tests {
-		c.Assert(findRunes(query, index), check.DeepEquals, found)
+	for _, test := range tests {
+		if got := tokenize(test.input); !reflect.DeepEqual(got, test.want) {
+			t.Errorf("tokenize(%q) = %v", test.input, got)
+		}
 	}
 }
 
-func (s *MySuite) TestIndexHyphenatedWord(c *check.C) {
-	index, _ := indexWords("002D;HYPHEN-MINUS;Pd;0;ES;;;;;N;;;;;")
+// 0026;AMPERSAND;Po;0;ON;;;;;N;;;;;
+func TestParse(t *testing.T) {
 
-	tests := map[string][]rune{
-		"hyphen": []rune{0x2D},
+	var tests = []struct {
+		input     string
+		wantChar  rune
+		wantWords []string
+	}{
+		{"0026;AMPERSAND;Po;0;ON;;;;;N;;;;;", '&', []string{"AMPERSAND"}},
+		{"0021;EXCLAMATION MARK;Po;0;ON;;;;;N;;;;;", '!', []string{"EXCLAMATION", "MARK"}},
+		{"002E;FULL STOP;Po;0;CS;;;;;N;PERIOD;;;;", '.', []string{"FULL", "STOP", "PERIOD"}},
+		{"0027;APOSTROPHE;Po;0;ON;;;;;N;APOSTROPHE-QUOTE;;;", '\'', []string{"APOSTROPHE", "QUOTE"}},
 	}
-	for query, found := range tests {
-		c.Assert(findRunes(query, index), check.DeepEquals, found)
-	}
-}
-
-func (s *MySuite) TestIndexOldNameField(c *check.C) {
-	index, _ := indexWords(
-		"0028;LEFT PARENTHESIS;Ps;0;ON;;;;;Y;OPENING PARENTHESIS;;;;")
-
-	tests := map[string][]rune{
-		"opening": []rune{0x28},
-	}
-	for query, found := range tests {
-		c.Assert(findRunes(query, index), check.DeepEquals, found)
+	for _, test := range tests {
+		if gotChar, gotWords := Parse(test.input); gotChar != test.wantChar ||
+			!reflect.DeepEqual(gotWords, test.wantWords) {
+			t.Errorf("Parse(%q) = (%v, %v)", test.input, gotChar, gotWords)
+		}
 	}
 }
