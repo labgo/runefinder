@@ -64,3 +64,18 @@ func TestSliceHasAllStrings(t *testing.T) {
 		}
 	}
 }
+
+func TestPrepareQuery(t *testing.T) {
+	var tests = []struct {
+		input []string
+		want  []string
+	}{
+		{[]string{"PLUS", "sign"}, []string{"PLUS", "SIGN"}},
+		{[]string{"less-than", "sign"}, []string{"LESS", "THAN", "SIGN"}},
+	}
+	for _, test := range tests {
+		if got := PrepareQuery(test.input); !reflect.DeepEqual(got, test.want) {
+			t.Errorf("PrepareQuery(%q) = %v", test.input, got)
+		}
+	}
+}

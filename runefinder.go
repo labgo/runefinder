@@ -3,10 +3,16 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+const ucdFileName = "UnicodeData.txt"
+const ucdBaseUrl = "http://www.unicode.org/Public/UCD/latest/ucd/"
 
 func check(e error) {
 	if e != nil {
@@ -62,17 +68,62 @@ func Parse(ucdLine string) (rune, string, []string) {
 	return uchar, name, words
 }
 
-func main() {
+// PrepareQuery takes a slice of strings and returns a slice of
+// uppercased tokens, split at hyphens
+func PrepareQuery(parts []string) []string {
 	var query []string
-	if len(os.Args[1:]) > 0 {
-		for _, word := range os.Args[1:] {
-			query = append(query, strings.ToUpper(word))
+	for _, part := range parts {
+		for _, token := range tokenize(part) {
+			query = append(query, strings.ToUpper(token))
 		}
-	} else {
+	}
+	return query
+}
+
+func downloadUcdFile() {
+	url := ucdBaseUrl + ucdFileName
+	fmt.Printf("%s not found\ndownloading %s\n", ucdFileName, url)
+	running := make(chan bool)
+	progressDisplay := func(running <-chan bool) {
+		for {
+			select {
+			case <-running:
+				fmt.Println("done!")
+			case <-time.After(200 * time.Millisecond):
+				fmt.Print(".")
+			}
+		}
+	}
+	go progressDisplay(running)
+	defer func() {
+		running <- false
+	}()
+	response, err := http.Get(url)
+	check(err)
+	defer response.Body.Close()
+	file, err := os.Create(ucdFileName)
+	check(err)
+	_, err = io.Copy(file, response.Body)
+	check(err)
+	file.Close()
+}
+
+func getUcdFile() (*os.File, error) {
+	ucd, err := os.Open(ucdFileName)
+	if os.IsNotExist(err) {
+		downloadUcdFile()
+		ucd, err = os.Open(ucdFileName)
+	}
+	return ucd, err
+}
+
+func main() {
+	if len(os.Args[1:]) == 0 {
 		fmt.Println("Usage:  runefinder <word>...\texample: runefinder cat face")
 		os.Exit(1)
 	}
-	ucd, err := os.Open("UnicodeData.txt")
+	query := PrepareQuery(os.Args[1:])
+	ucd, err := getUcdFile()
 	check(err)
 	defer ucd.Close()
 	input := bufio.NewScanner(ucd)
