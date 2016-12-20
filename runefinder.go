@@ -12,7 +12,7 @@ import (
 )
 
 const ucdFileName = "UnicodeData.txt"
-const ucdBaseUrl = "http://www.unicode.org/Public/UCD/latest/ucd/"
+const ucdBaseURL = "http://www.unicode.org/Public/UCD/latest/ucd/"
 
 func check(e error) {
 	if e != nil {
@@ -81,7 +81,7 @@ func PrepareQuery(parts []string) []string {
 }
 
 func downloadUcdFile() {
-	url := ucdBaseUrl + ucdFileName
+	url := ucdBaseURL + ucdFileName
 	fmt.Printf("%s not found\ndownloading %s\n", ucdFileName, url)
 	running := make(chan bool)
 	progressDisplay := func(running <-chan bool) {
