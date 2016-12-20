@@ -130,7 +130,7 @@ func main() {
 	for input.Scan() {
 		uchar, name, words := Parse(input.Text())
 		if sliceHasAllStrings(words, query) {
-			fmt.Printf("%c\t%s\n", uchar, name)
+			fmt.Printf("U+%04X\t%c\t%s\n", uchar, uchar, name)
 		}
 
 	}
