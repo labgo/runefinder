@@ -103,9 +103,9 @@ func downloadUcdFile() {
 	defer response.Body.Close()
 	file, err := os.Create(ucdFileName)
 	check(err)
+	defer file.Close()
 	_, err = io.Copy(file, response.Body)
 	check(err)
-	file.Close()
 }
 
 func getUcdFile() (*os.File, error) {
@@ -130,8 +130,7 @@ func main() {
 	for input.Scan() {
 		uchar, name, words := Parse(input.Text())
 		if sliceHasAllStrings(words, query) {
-			fmt.Printf("U+%04X\t%c\t%s\n", uchar, uchar, name)
+			fmt.Printf("U+%04X\t%[1]c\t%s\n", uchar, name)
 		}
-
 	}
 }
